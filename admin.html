@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stake Dice Game - Admin</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h2>Stake Dice Game</h2>
+  <div id="gameArea">
+    <label>Bet ($):</label>
+    <input id="bet" type="number" value="10"><br>
+    <label>Target Number (1-99):</label>
+    <input id="target" type="number" value="50"><br>
+    <label>Direction:</label>
+    <select id="direction">
+      <option value="under">Under</option>
+      <option value="over">Over</option>
+    </select><br>
+    <button onclick="rollDice()">Roll</button>
+    <h3 id="result"></h3>
+  </div>
+
+  <hr>
+
+  <h3>Admin Login</h3>
+  <input id="adminPass" type="password" placeholder="Enter admin password">
+  <button onclick="adminLogin()">Login</button>
+
+  <div id="adminPanel" class="hidden">
+    <h3>Admin Panel</h3>
+    <label>Set House Edge (%):</label>
+    <input id="houseEdge" type="number" value="1"><br>
+    <button onclick="applySettings()">Apply Settings</button>
+    <p>Game Log:</p>
+    <pre id="log"></pre>
+  </div>
+
+  <script>
+    let houseEdge = 1; // Default
+    let gameLog = [];
+
+    function rollDice() {
+      const bet = parseFloat(document.getElementById("bet").value);
+      const target = parseFloat(document.getElementById("target").value);
+      const direction = document.getElementById("direction").value;
+      const roll = Math.floor(Math.random() * 100) + 1;
+
+      let win = false;
+      if (direction === "under") win = roll < target;
+      else win = roll > target;
+
+      const multiplier = direction === "under" ? (99 - houseEdge) / (target - 1) : (99 - houseEdge) / (99 - target);
+      const payout = win ? (bet * multiplier).toFixed(2) : 0;
+
+      const result = `Roll: ${roll} | ${win ? "Win" : "Lose"} | Payout: $${payout}`;
+      document.getElementById("result").innerText = result;
+      gameLog.push(result);
+      updateLog();
+    }
+
+    function updateLog() {
+      document.getElementById("log").innerText = gameLog.slice(-10).join("\n");
+    }
+
+    function adminLogin() {
+      const pass = document.getElementById("adminPass").value;
+      if (pass === "admin123") { // Simple password for demo
+        document.getElementById("adminPanel").classList.remove("hidden");
+        alert("Admin access granted");
+      } else {
+        alert("Wrong password!");
+      }
+    }
+
+    function applySettings() {
+      houseEdge = parseFloat(document.getElementById("houseEdge").value);
+      alert(`House edge set to ${houseEdge}%`);
+    }
+  </script>
+
+</body>
+</html>
