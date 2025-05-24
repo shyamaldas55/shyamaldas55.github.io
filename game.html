@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stake Dice Game</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 40px; }
+    input, button, select { margin: 10px; padding: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Stake Dice - Roll Over / Under</h2>
+
+  <label>Bet Amount: $</label>
+  <input id="bet" type="number" value="10"><br>
+
+  <label>Target Number (1 - 99):</label>
+  <input id="target" type="number" value="50"><br>
+
+  <label>Choose:</label>
+  <select id="direction">
+    <option value="under">Roll Under</option>
+    <option value="over">Roll Over</option>
+  </select><br>
+
+  <button onclick="rollDice()">Roll Dice</button>
+
+  <h3 id="result"></h3>
+
+  <script>
+    function rollDice() {
+      const bet = parseFloat(document.getElementById("bet").value);
+      const target = parseFloat(document.getElementById("target").value);
+      const direction = document.getElementById("direction").value;
+      const roll = Math.floor(Math.random() * 100) + 1;
+
+      let win = false;
+      if (direction === "under") {
+        win = roll < target;
+      } else {
+        win = roll > target;
+      }
+
+      const multiplier = direction === "under" ? 99 / (target - 1) : 99 / (99 - target);
+      const payout = win ? (bet * multiplier).toFixed(2) : 0;
+
+      document.getElementById("result").innerText = 
+        `Roll: ${roll} | You ${win ? "Win" : "Lose"}! Payout: $${payout}`;
+    }
+  </script>
+
+</body>
+</html>
