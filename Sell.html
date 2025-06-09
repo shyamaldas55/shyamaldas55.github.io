@@ -167,8 +167,8 @@
             const netProfit = totalSales - totalPayout;
             
             // Find lowest selling numbers
-            tickets.sort((a, b) => a.quantity - b.quantity);
-            const lowestCount = tickets[0].quantity;
+            const sortedTickets = [...tickets].sort((a, b) => a.quantity - b.quantity);
+            const lowestCount = sortedTickets[0].quantity;
             const lowestNumbers = tickets.filter(t => t.quantity === lowestCount).map(t => t.number);
             
             // Display sales summary
@@ -191,7 +191,7 @@
             // Display lowest selling numbers
             let lowestHTML = `
                 <p><strong>Minimum Tickets Sold:</strong> ${lowestCount}</p>
-                <p><strong>Numbers with lowest sales (${lowestCount} tickets):</strong></p>
+                <p><strong>Numbers with lowest sales (${lowestCount} ticket${lowestCount !== 1 ? 's' : ''}):</strong></p>
                 <div class="lowest-list">${lowestNumbers.join(', ')}</div>
             `;
             
