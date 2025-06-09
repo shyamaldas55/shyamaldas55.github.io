@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lottery Ticket Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+    th {
+      background: #eee;
+    }
+    .highlight {
+      background: #ffdddd;
+      font-weight: bold;
+    }
+    .result {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    input[type="text"] {
+      width: 80px;
+      padding: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Lottery Ticket Qty & Profit Calculator</h2>
+
+  <form id="qtyForm">
+    <table>
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Tickets Sold (e.g. 12+5)</th>
+          <th>Price per Ticket (₹)</th>
+          <th>Total Sales (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <!-- JS will generate rows -->
+      </tbody>
+    </table>
+
+    <button type="button" onclick="calculate(); sendToGoogleSheet();">Calculate & Save</button>
+  </form>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const tableBody = document.getElementById('tableBody');
+    const ticketPrice = 11;
+    const payout = 100;
+
+    // Create rows 0–9
+    for (let i = 0; i <= 9; i++) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${i}</td>
+        <td><input type="text" id="qty${i}" value="0" oninput="updateSales(${i})"></td>
+        <td>${ticketPrice}</td>
+        <td id="sales${i}">₹0</td>
+      `;
+      tableBody.appendChild(row);
+    }
+
+    function evaluateExpression(expr) {
+      try {
+        if (/^[\d+\-*/ ().]+$/.test(expr)) {
+          return Math.max(0, Math.floor(eval(expr)));
+        } else {
+          return 0;
+        }
+      } catch {
+        return 0;
+      }
+    }
+
+    function updateSales(index) {
+      const input = document.getElementById(`qty${index}`).value;
+      const qty = evaluateExpression(input);
+      const sales = qty * ticketPrice;
+      document.getElementById(`sales${index}`).innerText = `₹${sales}`;
+    }
+
+    function calculate() {
+      let totalTickets = 0;
+      let totalSales = 0;
+      let ticketCounts = [];
+
+      for (let i = 0; i <= 9; i++) {
+        const input = document.getElementById(`qty${i}`).value;
+        const qty = evaluateExpression(input);
+        ticketCounts.push(qty);
+        totalTickets += qty;
+        totalSales += qty * ticketPrice;
+        updateSales(i);
+      }
+
+      const maxQty = Math.max(...ticketCounts);
+      const minQty = Math.min(...ticketCounts);
+      const payoutTotal = maxQty * payout;
+      const profit = totalSales - payoutTotal;
+
+      const lowestNumbers = ticketCounts
+        .map((qty, i) => qty === minQty ? i : null)
+        .filter(v => v !== null)
+        .join(', ');
+
+      for (let i = 0; i <= 9; i++) {
+        const row = tableBody.rows[i];
+        row.classList.toggle('highlight', ticketCounts[i] === minQty);
+      }
+
+      document.getElementById('result').innerHTML = `
+        <strong>Total Tickets Sold:</strong> ${totalTickets}<br>
+        <strong>Total Sales:</strong> ₹${totalSales}<br>
+        <strong>Worst-case Payout:</strong> ₹${payoutTotal}<br>
+        <strong>Net Profit/Loss:</strong> ₹${profit} ${profit < 0 ? '<span style="color:red">(Loss)</span>' : '(Profit)'}<br>
+        <strong>Lowest Selling Number(s):</strong> <span class="highlight">${lowestNumbers}</span>
+      `;
+    }
+
+    function sendToGoogleSheet() {
+      const url = "PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE";  // ← Replace this with your Apps Script URL
+      let data = [];
+
+      for (let i = 0; i <= 9; i++) {
+        const input = document.getElementById(`qty${i}`).value;
+        const qty = evaluateExpression(input);
+        const sales = qty * ticketPrice;
+        data.push({
+          number: i,
+          ticketsSold: qty,
+          totalSales: sales
+        });
+      }
+
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.text())
+      .then(response => {
+        console.log("Saved:", response);
+        alert("Data saved to Google Sheet!");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("Failed to save to Google Sheet");
+      });
+    }
+  </script>
+
+</body>
+</html>
