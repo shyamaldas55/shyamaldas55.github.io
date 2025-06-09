@@ -3,46 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Ticket Sales Analyzer</title>
+    <title>Lottery Profit Calculator (0-9)</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 850px;
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 25px;
-            background-color: #f8f9fa;
+            padding: 20px;
+            background-color: #f5f7fa;
             color: #333;
         }
         h1 {
             color: #2c3e50;
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
-        }
-        .calculator-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-between;
+            border-bottom: 2px solid #3498db;
         }
         .calculator {
             background-color: white;
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            flex: 1;
-            min-width: 300px;
+            margin-bottom: 30px;
         }
-        .calculator h2 {
-            color: #3498db;
-            margin-top: 0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .ticket-input {
+            text-align: center;
+        }
+        .ticket-input label {
+            display: block;
+            background-color: #3498db;
+            color: white;
+            padding: 8px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+        }
+        .ticket-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+            text-align: center;
+            font-size: 16px;
+        }
+        button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #27ae60;
         }
         .result-box {
             background-color: #e8f4f8;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
             border-left: 4px solid #3498db;
@@ -51,190 +79,123 @@
             margin-top: 0;
             color: #2c3e50;
         }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .digit-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .digit-input {
-            text-align: center;
-        }
-        .digit-input label {
-            display: block;
-            background-color: #3498db;
-            color: white;
-            padding: 5px;
-            border-radius: 5px 5px 0 0;
-            text-align: center;
-            margin-bottom: 0;
-        }
-        .digit-input input {
-            border-radius: 0 0 5px 5px;
-            margin-bottom: 0;
-            text-align: center;
-        }
         .highlight {
             background-color: #ffeaa7;
-            padding: 2px 5px;
+            padding: 3px 6px;
             border-radius: 3px;
             font-weight: bold;
         }
-        @media (max-width: 768px) {
-            .digit-grid {
+        .profit {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .loss {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .lowest-list {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        @media (max-width: 600px) {
+            .ticket-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
 </head>
 <body>
-    <h1>Lottery Ticket Sales Analyzer (Digits 0-9)</h1>
+    <h1>Lottery Profit Calculator (0-9)</h1>
     
-    <div class="calculator-container">
-        <div class="calculator">
-            <h2>Sales Calculator</h2>
-            <p>Enter tickets sold for each digit to calculate totals:</p>
-            
-            <div class="digit-grid">
-                <!-- Digit inputs will be generated by JavaScript -->
-            </div>
-            
-            <button onclick="calculateSales()">Calculate Ticket Sales</button>
-            
-            <div class="result-box" id="salesResult">
-                <h3>Sales Summary</h3>
-                <div id="salesResultsContent">Enter ticket quantities to see results.</div>
-            </div>
+    <div class="calculator">
+        <h2>Ticket Sales Analysis</h2>
+        <p>Enter tickets sold for each number (Price: ₹11, Prize: ₹100):</p>
+        
+        <div class="ticket-grid" id="ticketInputs">
+            <!-- Generated by JavaScript -->
         </div>
         
-        <div class="calculator">
-            <h2>Minimum Sales Finder</h2>
-            <p>Enter total tickets to find minimum possible sales per digit:</p>
-            
-            <label for="totalTicketsInput">Total Tickets Sold:</label>
-            <input type="number" id="totalTicketsInput" min="0" step="1" placeholder="Enter total tickets">
-            
-            <button onclick="findMinimumSales()">Find Minimum Sales</button>
-            
-            <div class="result-box" id="minimumResult">
-                <h3>Minimum Sales Analysis</h3>
-                <div id="minimumResultsContent">Enter total tickets to see analysis.</div>
-            </div>
+        <button onclick="calculateAll()">Calculate Profit & Analysis</button>
+        
+        <div class="result-box">
+            <h3>Sales Summary</h3>
+            <div id="salesSummary">Enter ticket quantities to see results.</div>
+        </div>
+        
+        <div class="result-box">
+            <h3>Profit Analysis</h3>
+            <div id="profitAnalysis">Profit calculation will appear here.</div>
+        </div>
+        
+        <div class="result-box">
+            <h3>Lowest Selling Numbers</h3>
+            <div id="lowestSelling">Lowest selling numbers will appear here.</div>
         </div>
     </div>
 
     <script>
-        // Generate digit input fields
-        const digitGrid = document.querySelector('.digit-grid');
+        // Constants
+        const TICKET_PRICE = 11;
+        const WINNING_PRICE = 100;
+        
+        // Generate ticket input fields
+        const ticketGrid = document.getElementById('ticketInputs');
         for (let i = 0; i <= 9; i++) {
-            const digitDiv = document.createElement('div');
-            digitDiv.className = 'digit-input';
-            digitDiv.innerHTML = `
-                <label>Digit ${i}</label>
-                <input type="number" id="digit-${i}" min="0" value="0">
+            const ticketDiv = document.createElement('div');
+            ticketDiv.className = 'ticket-input';
+            ticketDiv.innerHTML = `
+                <label>Number ${i}</label>
+                <input type="number" id="ticket-${i}" min="0" value="0" placeholder="Qty">
             `;
-            digitGrid.appendChild(digitDiv);
+            ticketGrid.appendChild(ticketDiv);
         }
 
-        function calculateSales() {
-            let total = 0;
-            const sales = [];
+        function calculateAll() {
+            // Calculate sales
+            let totalTickets = 0;
+            const tickets = [];
             
-            // Get all digit values
             for (let i = 0; i <= 9; i++) {
-                const value = parseInt(document.getElementById(`digit-${i}`).value) || 0;
-                sales.push({digit: i, count: value});
-                total += value;
+                const qty = parseInt(document.getElementById(`ticket-${i}`).value) || 0;
+                tickets.push({number: i, quantity: qty});
+                totalTickets += qty;
             }
             
-            // Find min and max
-            sales.sort((a, b) => a.count - b.count);
-            const min = sales[0];
-            const max = sales[sales.length - 1];
+            // Calculate total sales and potential payout
+            const totalSales = totalTickets * TICKET_PRICE;
+            const totalPayout = tickets.reduce((sum, t) => sum + (t.quantity * WINNING_PRICE), 0);
+            const netProfit = totalSales - totalPayout;
             
-            // Prepare results
-            let resultsHTML = `
-                <p><strong>Total Tickets Sold:</strong> <span class="highlight">${total.toLocaleString()}</span></p>
-                <p><strong>Average per digit:</strong> ${(total/10).toFixed(1)} tickets</p>
-                <p><strong>Lowest selling digit:</strong> ${min.digit} with ${min.count} tickets</p>
-                <p><strong>Highest selling digit:</strong> ${max.digit} with ${max.count} tickets</p>
+            // Find lowest selling numbers
+            tickets.sort((a, b) => a.quantity - b.quantity);
+            const lowestCount = tickets[0].quantity;
+            const lowestNumbers = tickets.filter(t => t.quantity === lowestCount).map(t => t.number);
+            
+            // Display sales summary
+            document.getElementById('salesSummary').innerHTML = `
+                <p><strong>Total Tickets Sold:</strong> <span class="highlight">${totalTickets.toLocaleString()}</span></p>
+                <p><strong>Total Sales Value:</strong> ₹${totalSales.toLocaleString()}</p>
+                <p><strong>Potential Total Payout:</strong> ₹${totalPayout.toLocaleString()}</p>
             `;
             
-            document.getElementById('salesResultsContent').innerHTML = resultsHTML;
-        }
-
-        function findMinimumSales() {
-            const total = parseInt(document.getElementById('totalTicketsInput').value) || 0;
-            
-            if (isNaN(total) {
-                document.getElementById('minimumResultsContent').innerHTML = 
-                    "Please enter a valid number of total tickets.";
-                return;
-            }
-            
-            const base = Math.floor(total / 10);
-            const remainder = total % 10;
-            
-            let analysisHTML = `
-                <p><strong>Total tickets analyzed:</strong> <span class="highlight">${total.toLocaleString()}</span></p>
-                <p><strong>Base tickets per digit:</strong> ${base}</p>
-                <p><strong>Extra tickets to distribute:</strong> ${remainder}</p>
+            // Display profit analysis
+            document.getElementById('profitAnalysis').innerHTML = `
+                <p><strong>Net Profit:</strong> 
+                    <span class="${netProfit >= 0 ? 'profit' : 'loss'}">
+                        ₹${Math.abs(netProfit).toLocaleString()} ${netProfit >= 0 ? 'Profit' : 'Loss'}
+                    </span>
+                </p>
+                <p><strong>Profit Margin:</strong> ${totalSales > 0 ? ((netProfit / totalSales) * 100).toFixed(2) : 0}%</p>
             `;
             
-            if (total < 10) {
-                analysisHTML += `
-                    <p><strong>Minimum possible for any digit:</strong> 0 tickets</p>
-                    <p>With less than 10 tickets, some digits will naturally have 0 tickets.</p>
-                `;
-            } else {
-                analysisHTML += `
-                    <p><strong>Minimum possible for any digit:</strong> ${base} tickets</p>
-                    <p><strong>Digits with extra tickets:</strong> ${remaincer} digits will have ${base + 1} tickets</p>
-                    <p>This is the fairest possible distribution of tickets.</p>
-                `;
-            }
+            // Display lowest selling numbers
+            let lowestHTML = `
+                <p><strong>Minimum Tickets Sold:</strong> ${lowestCount}</p>
+                <p><strong>Numbers with lowest sales (${lowestCount} tickets):</strong></p>
+                <div class="lowest-list">${lowestNumbers.join(', ')}</div>
+            `;
             
-            // Add distribution example
-            if (total > 0) {
-                analysisHTML += `<p><strong>Example distribution:</strong><br>`;
-                for (let i = 0; i < 10; i++) {
-                    const count = i < remainder ? base + 1 : base;
-                    analysisHTML += `Digit ${i}: ${count} tickets${i < 9 ? ', ' : ''}`;
-                }
-                analysisHTML += `</p>`;
-            }
-            
-            document.getElementById('minimumResultsContent').innerHTML = analysisHTML;
+            document.getElementById('lowestSelling').innerHTML = lowestHTML;
         }
     </script>
 </body>
