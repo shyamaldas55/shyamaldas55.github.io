@@ -4,98 +4,181 @@
   <meta charset="UTF-8">
   <title>Lottery Ticket Calculator</title>
   <style>
-    table { border-collapse: collapse; width: 60%; margin: auto; }
-    th, td { padding: 8px 12px; text-align: center; border: 1px solid #ccc; }
-    input[type="number"] { width: 60px; text-align: center; }
-    .center { text-align: center; margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+    th {
+      background: #eee;
+    }
+    .highlight {
+      background: #ffdddd;
+      font-weight: bold;
+    }
+    .result {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    input[type="text"] {
+      width: 80px;
+      padding: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h2 class="center">Lottery Ticket Profit Calculator</h2>
-  <form id="lotteryForm">
+
+  <h2>Lottery Ticket Qty & Profit Calculator</h2>
+
+  <form id="qtyForm">
     <table>
       <thead>
         <tr>
           <th>Number</th>
-          <th>Tickets Sold</th>
-          <th>Sales (₹)</th>
+          <th>Tickets Sold (e.g. 12+5)</th>
+          <th>Price per Ticket (₹)</th>
+          <th>Total Sales (₹)</th>
         </tr>
       </thead>
-      <tbody id="ticketTable">
-        <!-- Rows will be inserted by JS -->
+      <tbody id="tableBody">
+        <!-- JS will generate rows -->
       </tbody>
     </table>
-    <div class="center">
-      <button type="submit">Calculate & Save</button>
-    </div>
+
+    <button type="button" onclick="calculate(); sendToGoogleSheet();">Calculate & Save</button>
   </form>
-  <div class="center">
-    <p id="totalSold">Total Tickets Sold: 0</p>
-    <p id="totalSales">Total Sales: ₹0</p>
-  </div>
+
+  <div class="result" id="result"></div>
 
   <script>
-    const tableBody = document.getElementById("ticketTable");
+    const tableBody = document.getElementById('tableBody');
     const ticketPrice = 11;
+    const payout = 100;
 
+    // Create rows 0–9
     for (let i = 0; i <= 9; i++) {
-      const row = document.createElement("tr");
+      const row = document.createElement('tr');
       row.innerHTML = `
         <td>${i}</td>
-        <td><input type="number" min="0" value="0" data-number="${i}"></td>
-        <td class="sale">₹0</td>
+        <td><input type="text" id="qty${i}" value="0" oninput="updateSales(${i})"></td>
+        <td>${ticketPrice}</td>
+        <td id="sales${i}">₹0</td>
       `;
       tableBody.appendChild(row);
     }
 
-    document.getElementById("lotteryForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
+    function evaluateExpression(expr) {
+      try {
+        if (/^[\d+\-*/ ().]+$/.test(expr)) {
+          return Math.max(0, Math.floor(eval(expr)));
+        } else {
+          return 0;
+        }
+      } catch {
+        return 0;
+      }
+    }
 
-      const inputs = document.querySelectorAll("input[type='number']");
-      const salesCells = document.querySelectorAll(".sale");
+    function updateSales(index) {
+      const input = document.getElementById(`qty${index}`).value;
+      const qty = evaluateExpression(input);
+      const sales = qty * ticketPrice;
+      document.getElementById(`sales${index}`).innerText = `₹${sales}`;
+    }
 
-      let totalSold = 0;
+    function calculate() {
+      let totalTickets = 0;
       let totalSales = 0;
+      let ticketCounts = [];
+
+      for (let i = 0; i <= 9; i++) {
+        const input = document.getElementById(`qty${i}`).value;
+        const qty = evaluateExpression(input);
+        ticketCounts.push(qty);
+        totalTickets += qty;
+        totalSales += qty * ticketPrice;
+        updateSales(i);
+      }
+
+      const maxQty = Math.max(...ticketCounts);
+      const minQty = Math.min(...ticketCounts);
+      const payoutTotal = maxQty * payout;
+      const profit = totalSales - payoutTotal;
+
+      const lowestNumbers = ticketCounts
+        .map((qty, i) => qty === minQty ? i : null)
+        .filter(v => v !== null)
+        .join(', ');
+
+      for (let i = 0; i <= 9; i++) {
+        const row = tableBody.rows[i];
+        row.classList.toggle('highlight', ticketCounts[i] === minQty);
+      }
+
+      document.getElementById('result').innerHTML = `
+        <strong>Total Tickets Sold:</strong> ${totalTickets}<br>
+        <strong>Total Sales:</strong> ₹${totalSales}<br>
+        <strong>Worst-case Payout:</strong> ₹${payoutTotal}<br>
+        <strong>Net Profit/Loss:</strong> ₹${profit} ${profit < 0 ? '<span style="color:red">(Loss)</span>' : '(Profit)'}<br>
+        <strong>Lowest Selling Number(s):</strong> <span class="highlight">${lowestNumbers}</span>
+      `;
+    }
+
+    function sendToGoogleSheet() {
+      const url = "https://script.google.com/macros/s/AKfycbwihNuWlJh4nyK4PKI_zh7tibYPc8bHHHCEtdcLr-eWpGGRn0mQpRjP00bC_c8NyLbc/exec";  // ← Replace this with your Apps Script URL
       let data = [];
 
-      inputs.forEach((input, index) => {
-        const number = input.getAttribute("data-number");
-        const qty = parseInt(input.value.replace(/^0+/, '')) || 0;
+      for (let i = 0; i <= 9; i++) {
+        const input = document.getElementById(`qty${i}`).value;
+        const qty = evaluateExpression(input);
         const sales = qty * ticketPrice;
-        totalSold += qty;
-        totalSales += sales;
-        salesCells[index].textContent = `₹${sales}`;
-
-        if (qty > 0) {
-          data.push({
-            number: number,
-            ticketsSold: qty,
-            totalSales: sales
-          });
-        }
-      });
-
-      document.getElementById("totalSold").textContent = `Total Tickets Sold: ${totalSold}`;
-      document.getElementById("totalSales").textContent = `Total Sales: ₹${totalSales}`;
-
-      // 👉 REPLACE this with your actual Web App URL
-      const url = "https://script.google.com/macros/s/AKfycbz29CpcbDvay9LdLBSqANNE2nvqTLeDRn9P4H60tdCty3OBvb4wFyyZ06xzBFEsDpZI/exec";
-
-      try {
-        await fetch(url, {
-          method: "POST",
-          mode: "no-cors", // Required to avoid CORS error
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
+        data.push({
+          number: i,
+          ticketsSold: qty,
+          totalSales: sales
         });
-        alert("Data saved to Google Sheet!");
-      } catch (error) {
-        alert("Failed to save to Google Sheet");
-        console.error(error);
       }
-    });
+
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.text())
+      .then(response => {
+        console.log("Saved:", response);
+        alert("Data saved to Google Sheet!");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("Failed to save to Google Sheet");
+      });
+    }
   </script>
+
 </body>
 </html>
