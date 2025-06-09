@@ -36,8 +36,9 @@
       border-radius: 8px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    input[type="number"] {
-      width: 60px;
+    input[type="text"] {
+      width: 80px;
+      padding: 4px;
     }
     button {
       padding: 10px 20px;
@@ -56,7 +57,7 @@
       <thead>
         <tr>
           <th>Number</th>
-          <th>Tickets Sold</th>
+          <th>Tickets Sold (e.g. 12+5)</th>
           <th>Price per Ticket (₹)</th>
           <th>Total Sales (₹)</th>
         </tr>
@@ -80,15 +81,28 @@
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${i}</td>
-        <td><input type="number" id="qty${i}" value="0" min="0" oninput="updateSales(${i})"></td>
+        <td><input type="text" id="qty${i}" value="0" oninput="updateSales(${i})"></td>
         <td>${ticketPrice}</td>
         <td id="sales${i}">₹0</td>
       `;
       tableBody.appendChild(row);
     }
 
+    function evaluateExpression(expr) {
+      try {
+        if (/^[\d+\-*/ ().]+$/.test(expr)) {
+          return Math.max(0, Math.floor(eval(expr))); // Ensure non-negative integer
+        } else {
+          return 0;
+        }
+      } catch {
+        return 0;
+      }
+    }
+
     function updateSales(index) {
-      const qty = parseInt(document.getElementById(`qty${index}`).value) || 0;
+      const input = document.getElementById(`qty${index}`).value;
+      const qty = evaluateExpression(input);
       const sales = qty * ticketPrice;
       document.getElementById(`sales${index}`).innerText = `₹${sales}`;
     }
@@ -99,11 +113,12 @@
       let ticketCounts = [];
 
       for (let i = 0; i <= 9; i++) {
-        const qty = parseInt(document.getElementById(`qty${i}`).value) || 0;
+        const input = document.getElementById(`qty${i}`).value;
+        const qty = evaluateExpression(input);
         ticketCounts.push(qty);
         totalTickets += qty;
         totalSales += qty * ticketPrice;
-        updateSales(i); // Update individual sales
+        updateSales(i);
       }
 
       const maxQty = Math.max(...ticketCounts);
@@ -111,13 +126,11 @@
       const payoutTotal = maxQty * payout;
       const profit = totalSales - payoutTotal;
 
-      // Find lowest-selling numbers
       const lowestNumbers = ticketCounts
         .map((qty, i) => qty === minQty ? i : null)
         .filter(v => v !== null)
         .join(', ');
 
-      // Highlight lowest-selling numbers
       for (let i = 0; i <= 9; i++) {
         const row = tableBody.rows[i];
         row.classList.toggle('highlight', ticketCounts[i] === minQty);
