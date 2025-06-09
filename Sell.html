@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Ticket Sales Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .calculator {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .result-box {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lottery Ticket Sales Calculator (0-9)</h1>
+    
+    <div class="calculator">
+        <h2>Total Tickets Sold Calculator</h2>
+        <p>Enter the number of tickets sold for each digit (0-9):</p>
+        
+        <table id="ticketTable">
+            <tr>
+                <th>Digit</th>
+                <th>Tickets Sold</th>
+            </tr>
+            <!-- Rows will be added by JavaScript -->
+        </table>
+        
+        <button onclick="calculateTotal()">Calculate Total</button>
+        
+        <div class="result-box" id="totalResult">
+            Total tickets sold will appear here.
+        </div>
+    </div>
+    
+    <div class="calculator">
+        <h2>Lowest Tickets Sold Calculator</h2>
+        <p>Enter the total tickets sold to find possible distributions:</p>
+        
+        <label for="totalTickets">Total Tickets Sold:</label>
+        <input type="number" id="totalTickets" min="0" step="1">
+        
+        <button onclick="calculateLowest()">Calculate Possible Distributions</button>
+        
+        <div class="result-box" id="lowestResult">
+            Possible distributions will appear here.
+        </div>
+    </div>
+
+    <script>
+        // Create table rows for digits 0-9
+        const table = document.getElementById('ticketTable');
+        for (let i = 0; i <= 9; i++) {
+            const row = table.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            
+            cell1.textContent = i;
+            cell2.innerHTML = `<input type="number" id="digit${i}" min="0" step="1" value="0">`;
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (let i = 0; i <= 9; i++) {
+                const value = parseInt(document.getElementById(`digit${i}`).value) || 0;
+                total += value;
+            }
+            document.getElementById('totalResult').innerHTML = `
+                <strong>Total Tickets Sold:</strong> ${total.toLocaleString()}
+            `;
+        }
+
+        function calculateLowest() {
+            const total = parseInt(document.getElementById('totalTickets').value) || 0;
+            
+            if (total < 10) {
+                document.getElementById('lowestResult').innerHTML = `
+                    <strong>With ${total} total tickets:</strong><br>
+                    The minimum tickets sold for any digit is 0 (since not all digits need to have tickets).
+                `;
+                return;
+            }
+            
+            // Calculate possible distributions
+            const base = Math.floor(total / 10);
+            const remainder = total % 10;
+            
+            let explanation = `<strong>With ${total} total tickets:</strong><br>`;
+            explanation += `- Base tickets per digit: ${base}<br>`;
+            explanation += `- Extra tickets to distribute: ${remainder}<br><br>`;
+            
+            if (remainder === 0) {
+                explanation += `All digits have exactly ${base} tickets sold.`;
+            } else {
+                explanation += `Possible distributions:<br>`;
+                explanation += `- Minimum tickets for any digit: ${base}<br>`;
+                explanation += `- Maximum tickets for any digit: ${base + 1}<br>`;
+                explanation += `${remainder} digits will have ${base + 1} tickets, `;
+                explanation += `and ${10 - remainder} digits will have ${base} tickets.`;
+            }
+            
+            document.getElementById('lowestResult').innerHTML = explanation;
+        }
+    </script>
+</body>
+</html>
