@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Lottery Calculator (0-9)</title>
+    <title>Premium Lottery Calculator (0-9)</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f7fa;
@@ -28,23 +28,50 @@
             margin-bottom: 30px;
         }
         .control-panel {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
             margin-bottom: 20px;
+        }
+        .control-group {
+            background-color: #f0f5ff;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .control-group h3 {
+            margin-top: 0;
+            font-size: 14px;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
         }
         .control-btn {
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
+            font-size: 13px;
+            margin: 3px;
+            width: 100%;
+            transition: all 0.3s;
         }
         .control-btn:hover {
             background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+        .control-btn.small {
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        .control-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
         .ticket-grid {
             display: grid;
@@ -55,6 +82,9 @@
         .ticket-input {
             text-align: center;
             position: relative;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding-bottom: 5px;
         }
         .ticket-input label {
             display: block;
@@ -68,51 +98,73 @@
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 0 0 5px 5px;
+            border-radius: 0;
             text-align: center;
             font-size: 16px;
+            background-color: white;
         }
         .quick-actions {
-            display: flex;
-            margin-top: 5px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3px;
+            padding: 3px;
         }
         .quick-btn {
-            flex: 1;
-            padding: 3px;
+            padding: 5px;
             font-size: 12px;
             background-color: #eee;
             border: none;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
         .quick-btn:hover {
             background-color: #ddd;
+        }
+        .quick-btn.plus {
+            background-color: #e1f5e1;
+        }
+        .quick-btn.minus {
+            background-color: #ffebee;
         }
         button.calculate {
             background-color: #2ecc71;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 15px 20px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             width: 100%;
-            margin: 10px 0;
-            transition: background-color 0.3s;
+            margin: 15px 0;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         button.calculate:hover {
             background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .result-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
         }
         .result-box {
             background-color: #e8f4f8;
             padding: 20px;
             border-radius: 8px;
-            margin-top: 20px;
             border-left: 4px solid #3498db;
         }
         .result-box h3 {
             margin-top: 0;
             color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        .result-box h3 i {
+            margin-right: 10px;
+            color: #3498db;
         }
         .highlight {
             background-color: #ffeaa7;
@@ -132,51 +184,94 @@
             margin-top: 10px;
             padding-left: 20px;
         }
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .ticket-grid {
                 grid-template-columns: repeat(3, 1fr);
+            }
+            .control-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .ticket-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .control-panel {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Advanced Lottery Calculator (0-9)</h1>
+    <h1>Premium Lottery Calculator (0-9)</h1>
     
     <div class="calculator">
         <h2>Ticket Sales Analysis</h2>
         <p>Enter tickets sold for each number (Price: ₹11, Prize: ₹100):</p>
         
         <div class="control-panel">
-            <button class="control-btn" onclick="setAll(0)">Clear All</button>
-            <button class="control-btn" onclick="setRandom()">Random Fill</button>
-            <button class="control-btn" onclick="incrementAll(1)">+1 All</button>
-            <button class="control-btn" onclick="incrementAll(5)">+5 All</button>
-            <button class="control-btn" onclick="incrementAll(10)">+10 All</button>
-            <button class="control-btn" onclick="setEvenOdd('even')">Set Even</button>
-            <button class="control-btn" onclick="setEvenOdd('odd')">Set Odd</button>
-            <input type="number" id="bulkValue" placeholder="Value" style="width: 60px;">
-            <button class="control-btn" onclick="setAll(document.getElementById('bulkValue').value)">Set All</button>
+            <div class="control-group">
+                <h3>Basic Controls</h3>
+                <button class="control-btn" onclick="setAll(0)">Clear All</button>
+                <button class="control-btn" onclick="setRandom(50, 200)">Random Fill</button>
+                <button class="control-btn" onclick="calculateAll()">Calculate Now</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Bulk Adjustments</h3>
+                <button class="control-btn small" onclick="incrementAll(1)">+1 All</button>
+                <button class="control-btn small" onclick="incrementAll(5)">+5 All</button>
+                <button class="control-btn small" onclick="incrementAll(10)">+10 All</button>
+                <button class="control-btn small" onclick="incrementAll(-1)">-1 All</button>
+                <button class="control-btn small" onclick="incrementAll(-5)">-5 All</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Set Specific Value</h3>
+                <input type="number" id="bulkValue" class="control-input" placeholder="Enter value" min="0">
+                <button class="control-btn" onclick="setAll(document.getElementById('bulkValue').value)">Set All</button>
+                <button class="control-btn" onclick="addToAll(document.getElementById('bulkValue').value)">Add to All</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Pattern Settings</h3>
+                <button class="control-btn small" onclick="setEvenOdd('even')">Set Even</button>
+                <button class="control-btn small" onclick="setEvenOdd('odd')">Set Odd</button>
+                <button class="control-btn small" onclick="setHighLow('high')">Set High (5-9)</button>
+                <button class="control-btn small" onclick="setHighLow('low')">Set Low (0-4)</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>Special Functions</h3>
+                <button class="control-btn small" onclick="doubleAll()">Double All</button>
+                <button class="control-btn small" onclick="halveAll()">Halve All</button>
+                <button class="control-btn small" onclick="distributeEvenly()">Distribute Evenly</button>
+            </div>
         </div>
         
         <div class="ticket-grid" id="ticketInputs">
             <!-- Generated by JavaScript -->
         </div>
         
-        <button class="calculate" onclick="calculateAll()">Calculate Profit & Analysis</button>
+        <button class="calculate" onclick="calculateAll()">
+            Calculate Profit & Analysis
+        </button>
         
-        <div class="result-box">
-            <h3>Sales Summary</h3>
-            <div id="salesSummary">Enter ticket quantities to see results.</div>
-        </div>
-        
-        <div class="result-box">
-            <h3>Profit Analysis</h3>
-            <div id="profitAnalysis">Profit calculation will appear here.</div>
-        </div>
-        
-        <div class="result-box">
-            <h3>Lowest Selling Numbers</h3>
-            <div id="lowestSelling">Lowest selling numbers will appear here.</div>
+        <div class="result-container">
+            <div class="result-box">
+                <h3>📊 Sales Summary</h3>
+                <div id="salesSummary">Enter ticket quantities to see results.</div>
+            </div>
+            
+            <div class="result-box">
+                <h3>💰 Profit Analysis</h3>
+                <div id="profitAnalysis">Profit calculation will appear here.</div>
+            </div>
+            
+            <div class="result-box">
+                <h3>📉 Lowest Selling</h3>
+                <div id="lowestSelling">Lowest selling numbers will appear here.</div>
+            </div>
         </div>
     </div>
 
@@ -194,10 +289,14 @@
                 <label>Number ${i}</label>
                 <input type="number" id="ticket-${i}" min="0" value="0" placeholder="Qty">
                 <div class="quick-actions">
-                    <button class="quick-btn" onclick="increment(${i}, 1)">+1</button>
-                    <button class="quick-btn" onclick="increment(${i}, 5)">+5</button>
-                    <button class="quick-btn" onclick="increment(${i}, -1)">-1</button>
-                    <button class="quick-btn" onclick="document.getElementById('ticket-${i}').value=0">0</button>
+                    <button class="quick-btn plus" onclick="increment(${i}, 1)" title="Add 1">+1</button>
+                    <button class="quick-btn plus" onclick="increment(${i}, 5)" title="Add 5">+5</button>
+                    <button class="quick-btn minus" onclick="increment(${i}, -1)" title="Subtract 1">-1</button>
+                    <button class="quick-btn minus" onclick="setTicketValue(${i}, 0)" title="Clear">0</button>
+                    <button class="quick-btn plus" onclick="increment(${i}, 10)" title="Add 10">+10</button>
+                    <button class="quick-btn plus" onclick="increment(${i}, 20)" title="Add 20">+20</button>
+                    <button class="quick-btn minus" onclick="increment(${i}, -5)" title="Subtract 5">-5</button>
+                    <button class="quick-btn" onclick="setTicketValue(${i}, prompt('Enter value for ${i}:', getTicketValue(${i})))" title="Set custom">✏️</button>
                 </div>
             `;
             ticketGrid.appendChild(ticketDiv);
@@ -205,11 +304,14 @@
 
         // Helper functions
         function getTicketValue(num) {
-            return parseInt(document.getElementById(`ticket-${num}`).value) || 0;
+            const val = parseInt(document.getElementById(`ticket-${num}`).value);
+            return isNaN(val) ? 0 : val;
         }
 
         function setTicketValue(num, value) {
-            document.getElementById(`ticket-${num}`).value = Math.max(0, value);
+            const val = Math.max(0, parseInt(value) || 0);
+            document.getElementById(`ticket-${num}`).value = val;
+            return val;
         }
 
         function increment(num, amount) {
@@ -225,15 +327,22 @@
             }
         }
 
+        function addToAll(value) {
+            const val = parseInt(value) || 0;
+            for (let i = 0; i <= 9; i++) {
+                increment(i, val);
+            }
+        }
+
         function incrementAll(amount) {
             for (let i = 0; i <= 9; i++) {
                 increment(i, amount);
             }
         }
 
-        function setRandom() {
+        function setRandom(min = 0, max = 100) {
             for (let i = 0; i <= 9; i++) {
-                setTicketValue(i, Math.floor(Math.random() * 100));
+                setTicketValue(i, Math.floor(Math.random() * (max - min + 1)) + min);
             }
         }
 
@@ -247,6 +356,48 @@
             }
         }
 
+        function setHighLow(type) {
+            for (let i = 0; i <= 9; i++) {
+                if ((type === 'high' && i >= 5) || (type === 'low' && i <= 4)) {
+                    setTicketValue(i, 15);
+                } else {
+                    setTicketValue(i, 5);
+                }
+            }
+        }
+
+        function doubleAll() {
+            for (let i = 0; i <= 9; i++) {
+                const current = getTicketValue(i);
+                setTicketValue(i, current * 2);
+            }
+        }
+
+        function halveAll() {
+            for (let i = 0; i <= 9; i++) {
+                const current = getTicketValue(i);
+                setTicketValue(i, Math.floor(current / 2));
+            }
+        }
+
+        function distributeEvenly() {
+            const total = getTotalTickets();
+            const base = Math.floor(total / 10);
+            const remainder = total % 10;
+            
+            for (let i = 0; i <= 9; i++) {
+                setTicketValue(i, i < remainder ? base + 1 : base);
+            }
+        }
+
+        function getTotalTickets() {
+            let total = 0;
+            for (let i = 0; i <= 9; i++) {
+                total += getTicketValue(i);
+            }
+            return total;
+        }
+
         // Main calculation function
         function calculateAll() {
             // Calculate sales
@@ -254,47 +405,4 @@
             const tickets = [];
             
             for (let i = 0; i <= 9; i++) {
-                const qty = getTicketValue(i);
-                tickets.push({number: i, quantity: qty});
-                totalTickets += qty;
-            }
-            
-            // Calculate total sales and potential payout
-            const totalSales = totalTickets * TICKET_PRICE;
-            const totalPayout = tickets.reduce((sum, t) => sum + (t.quantity * WINNING_PRICE), 0);
-            const netProfit = totalSales - totalPayout;
-            
-            // Find lowest selling numbers
-            const sortedTickets = [...tickets].sort((a, b) => a.quantity - b.quantity);
-            const lowestCount = sortedTickets[0].quantity;
-            const lowestNumbers = tickets.filter(t => t.quantity === lowestCount).map(t => t.number);
-            
-            // Display sales summary
-            document.getElementById('salesSummary').innerHTML = `
-                <p><strong>Total Tickets Sold:</strong> <span class="highlight">${totalTickets.toLocaleString()}</span></p>
-                <p><strong>Total Sales Value:</strong> ₹${totalSales.toLocaleString()}</p>
-                <p><strong>Potential Total Payout:</strong> ₹${totalPayout.toLocaleString()}</p>
-            `;
-            
-            // Display profit analysis
-            document.getElementById('profitAnalysis').innerHTML = `
-                <p><strong>Net Profit:</strong> 
-                    <span class="${netProfit >= 0 ? 'profit' : 'loss'}">
-                        ₹${Math.abs(netProfit).toLocaleString()} ${netProfit >= 0 ? 'Profit' : 'Loss'}
-                    </span>
-                </p>
-                <p><strong>Profit Margin:</strong> ${totalSales > 0 ? ((netProfit / totalSales) * 100).toFixed(2) : 0}%</p>
-            `;
-            
-            // Display lowest selling numbers
-            let lowestHTML = `
-                <p><strong>Minimum Tickets Sold:</strong> ${lowestCount}</p>
-                <p><strong>Numbers with lowest sales (${lowestCount} ticket${lowestCount !== 1 ? 's' : ''}):</strong></p>
-                <div class="lowest-list">${lowestNumbers.join(', ')}</div>
-            `;
-            
-            document.getElementById('lowestSelling').innerHTML = lowestHTML;
-        }
-    </script>
-</body>
-</html>
+                const qty = getTicketValue
